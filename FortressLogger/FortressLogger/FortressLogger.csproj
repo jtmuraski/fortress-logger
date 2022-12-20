@@ -7,6 +7,16 @@
     <Title>Fortress Logger</Title>
     <Authors>John Muraski</Authors>
     <Version>0.1.0 </Version>
+    <Copyright>2022</Copyright>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>OSL-3.0</PackageLicenseExpression>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
 </Project>
