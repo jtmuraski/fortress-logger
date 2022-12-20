@@ -30,7 +30,7 @@ namespace FortressLogger
             _logPath = filePath;
             _folderName = string.IsNullOrEmpty(folderName) ? "Fortress Logger Logs" : folderName;
             _logDir = _logPath + "/" + _folderName;
-            var dirInfo = System.IO.Directory.CreateDirectory(_logDir);
+            var dirInfo = Directory.CreateDirectory(_logDir);
 
             // Set up File Name for levels
             _debuggerFile = _logDir + "/Debugger.txt";
@@ -69,7 +69,11 @@ namespace FortressLogger
             }
             return;
         }
-
+        /// <summary>
+        /// Write a message to the Error logger file
+        /// </summary>
+        /// <param name="message">REQUIRED: The message to be logged</param>
+        /// <param name="functionName">OPTIONAL: Name of the function that the message is from</param>
         public void LogError(string message, string functionName = "")
         {
             // Build the message
@@ -94,7 +98,11 @@ namespace FortressLogger
             }
             return;
         }
-
+        /// <summary>
+        /// Write a message to the Alert logger file
+        /// </summary>
+        /// <param name="message">REQUIRED: The message to be logged</param>
+        /// <param name="functionName">OPTIONAL: The name of the function that the message is being logged from</param>
         public void LogAlert(string message, string functionName = "")
         {
             // Build the message
@@ -119,7 +127,11 @@ namespace FortressLogger
             }
             return;
         }
-
+        /// <summary>
+        /// Log a message to the Info logger file
+        /// </summary>
+        /// <param name="message">REQUIRED: The message that is being logged</param>
+        /// <param name="functionName">OPTIONAL: The name of the function that the message is being logged from</param>
         public void LogInfo(string message, string functionName = "")
         {
             // Build the message
