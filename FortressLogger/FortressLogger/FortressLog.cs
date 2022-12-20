@@ -16,7 +16,7 @@ namespace FortressLogger
         private static string _alertFile { get; set; }
         private static string _infoFile { get; set; }
         private static string _fullLogFile { get; set;}
-        private static string _whiteSpace = "   ";
+        private static string _whiteSpace = "     ";
 
         /// <summary>
         /// Initialize the logger with a file path and an option name for the folder. The constructor will create the folder if it does not already exist
