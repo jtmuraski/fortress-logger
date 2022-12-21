@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Data;
 using Microsoft.Data.SqlClient;
+using FortressLogger;
 
 namespace FortressLogger
 {
@@ -17,18 +19,11 @@ namespace FortressLogger
         //
         // --Sql Variables--
         private string _connString { get; set; }
+        private string _schema { get; set}
         private SqlConnection _conn { get; set; }
 
         // --Logger File Variables--
-        private static string _logPath { get; set; }
-        private static string _folderName { get; set; }
-        private static string _logDir { get; set; }
-        private static string _debuggerFile { get; set; }
-        private static string _errorFile { get; set; }
-        private static string _alertFile { get; set; }
-        private static string _infoFile { get; set; }
-        private static string _fullLogFile { get; set; }
-        private static string _whiteSpace = "     ";
+        FortressLog _logger { get; set; }
         private static bool logToFile { get; set; } = false;
 
         // ---Constructors---
@@ -40,9 +35,111 @@ namespace FortressLogger
         /// <param name="connectionString">REQUIRED: Connection string to the Sql Server Database that the logs will be writtern to. Will throw an ArgumentNullException if left null</param>
         /// <param name="logToFile">REQUIRED: Defaults to FALSE. If set to true, will log to text file, but logDir must be supplied</param>
         /// <param name="logDir">REQUIRED IF logToFile is TRUE. If logToFile is true, and logDir is null/empty, the constr will throw an ArgumentNullException</param>
-        public FortressSqlLogger(string connectionString, bool logToFile = false, string logDir = "")
+        public FortressSqlLogger(string connectionString, string schema = "", bool logToFile = false, string logDir = "", string folderName = "Application")
         {
+            // Validate Parameters
+            if (string.IsNullOrEmpty(connectionString))
+                throw new ArgumentNullException("The connectionString parameter may NOT be left null. A valid connection string must be supplied");
 
+            if (logToFile)
+                if (string.IsNullOrEmpty(logDir))
+                    throw new ArgumentNullException("If logToFile is set to TRUE, a valid filepath must be provided and may not be left null");
+
+
+            // Set Up Sql Connection
+            _connString = connectionString;
+            _schema = schema;
+            SqlConnection _conn = new SqlConnection(connectionString);
+
+            // Connect to the database and verify that the logging table is present in the database
+            if (!VerifyLoggingTableIsPresent())
+                CreateLoggingTable(schema);
+
+            // If logToFile is true, set up the FortressLog instance
+            _logger = new FortressLog(logDir, folderName);
+        }
+
+        public void SqlLogger(AlertLevel alertLevel, string message = "", string functionName = "")
+        {
+            string query = string.Format(@"INSERT INTO {0}FortressLoggerMessages (TimeStamp_Utc, AlertLevel, FunctionName, Message)
+                                            VALUES( @time, @alertLevel, @functionName, @message);", _schema);
+            SqlCommand cmd = new SqlCommand(query, _conn);
+
+            try
+            {
+                // Add Parameters
+                cmd.Parameters.Add("@time", SqlDbType.DateTimeOffset).Value = DateTimeOffset.UtcNow;
+                cmd.Parameters.Add("@alertLevel", SqlDbType.NVarChar).Value = alertLevel.ToString();
+                cmd.Parameters.Add("@functionName", SqlDbType.NVarChar).Value = functionName;
+                cmd.Parameters.Add("message", SqlDbType.NVarChar).Value = message;
+
+                _conn.Open();
+                cmd.ExecuteNonQuery();
+            }
+            catch(Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+            return;
+        }
+
+        private bool VerifyLoggingTableIsPresent()
+        {
+            bool tableExists = false;
+            string query = @"IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'FortressLoggerMessages')
+                                SELECT 'TRUE' AS 'TableExists'
+                             ELSE
+                                SELECT 'FALSE' AS 'TableExists'; ";
+            SqlCommand cmd = new SqlCommand(query, _conn);
+
+            try
+            {
+                using (_conn)
+                using (cmd)
+                {
+                    _conn.Open();
+                    using (SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection))
+                    {
+                        while (reader.Read())
+                        {
+                            tableExists = reader["TableExists"].ToString() == "TRUE" ? true : false;
+                        }
+                    }
+                }
+                return tableExists;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+        }
+
+        private void CreateLoggingTable(string schema)
+        {
+            string query = string.Format(@"CREATE TABLE {0}FortressLoggerMessages (
+                                            MessageId int IDENTITY(1,1),
+                                            TimeStamp_Utc datetimeoffset(7),
+                                            AlertLevel nvarchar(32),
+                                            FunctionName nvarchar(128),
+                                            Message nvarchar(1500)
+                                            );", schema);
+
+            SqlCommand cmd = new SqlCommand(query, _conn);
+            try
+            {
+                using (_conn)
+                using (cmd)
+                {
+                    _conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                return;
+            }
+            catch(Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+           
         }
     }
 }
