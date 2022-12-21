@@ -20,6 +20,7 @@ and I figured that I would share it with the world and see if anyone else had a 
  ## Release Notes
  
  __V 0.1.0__
+ 
  This is the initial release version of Fortress Logger and include the following features:
 - Log 4 different alert levels (Debug, Info, Alert and Error)
 - A log messge is stored in 2 places: one in a Full Log file that records all messages and a level specific file
