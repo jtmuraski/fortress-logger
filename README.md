@@ -12,7 +12,7 @@ and I figured that I would share it with the world and see if anyone else had a 
  
  ## Development Roadmap
  The following features are what are currently being planned to be implemented to Fortress Logger in the future:
- - ~~Write log messages to Sql Server database table~~  [x] __ *COMPLETED!* Added in V 0.2.0__
+ - ~~Write log messages to Sql Server database table~~  __*COMPLETED!* Added in V 0.2.0__
  - Write log messages to a PostgreSql database table
  - Write log messages to a MySql database table
  - Include configuration options for things like a max file size for log files
