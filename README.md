@@ -18,7 +18,16 @@ and I figured that I would share it with the world and see if anyone else had a 
  - Include configuration options for things like a max file size for log files
  
  ## Release Notes
- 
+ __V 0.2.0 December 26th, 2022__
+
+- Allow messages to be saved to a SQL Database table
+- When the logger is initialized, the constructor will ensure that the proper database table has been created
+- Using the FortressSqlLogger can be configured to write to both the database and the log text files, just like in V 0.1.0
+- Added a Database level of logging to the original four
+- Currently when using the FortressSqlLogger type, all message will be written to a database, and only writtern to a file if configured to do so. At this time, you CANNOT use FotressSqlLogger to write messages
+  to a text file and NOT the database. If you wish to write to a text file and not a database, initialize a new instance of Fortress Logger using the same filepath. If enough people ask for this to be an option
+  using FortressSqlLogger, I will look into changing it.
+  
  __V 0.1.0__
  
  This is the initial release version of Fortress Logger and include the following features:
