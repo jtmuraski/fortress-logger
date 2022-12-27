@@ -11,6 +11,7 @@ namespace FortressLogger
         Info,
         Debug,
         Alert,
-        Error
+        Error,
+        Database
     }
 }

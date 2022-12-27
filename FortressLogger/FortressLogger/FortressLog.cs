@@ -16,6 +16,7 @@ namespace FortressLogger
         private static string _alertFile { get; set; }
         private static string _infoFile { get; set; }
         private static string _fullLogFile { get; set;}
+        private static string _databaseFile { get; set; }
         private static string _whiteSpace = "     ";
 
         /// <summary>
@@ -29,15 +30,17 @@ namespace FortressLogger
             // Create the log directory if it is not already present
             _logPath = filePath;
             _folderName = string.IsNullOrEmpty(folderName) ? "Fortress Logger Logs" : folderName;
-            _logDir = _logPath + "/" + _folderName;
+            _logDir = _logPath + "\\" + _folderName;
             var dirInfo = Directory.CreateDirectory(_logDir);
 
             // Set up File Name for levels
-            _debuggerFile = _logDir + "/Debugger.txt";
-            _errorFile = _logDir + "/Errors.txt";
-            _alertFile = _logDir + "/Alerts.txt";
-            _infoFile = _logDir + "/Info.txt";
-            _fullLogFile = _logDir + "Full Logs/FullLogs.txt";
+            _debuggerFile = _logDir + "\\Debugger.txt";
+            _errorFile = _logDir + "\\Errors.txt";
+            _alertFile = _logDir + "\\Alerts.txt";
+            _infoFile = _logDir + "\\Info.txt";
+            _databaseFile = _logDir + "\\Database.txt";
+            var fullLogDir = Directory.CreateDirectory(_logDir + "\\Full Logs");
+            _fullLogFile = _logDir + "\\Full Logs\\FullLogs.txt";
         }
 
         /// <summary>
@@ -54,7 +57,7 @@ namespace FortressLogger
             loggerLine.Append(string.IsNullOrEmpty(functionName) ? "Application" : functionName);
             loggerLine.Append(_whiteSpace);
             loggerLine.Append("DEBUGGER");
-            loggerLine.Append("_whiteSpace");
+            loggerLine.Append(_whiteSpace);
             loggerLine.Append(message);
 
             // Write the message to the Debug file and the Full Log file
@@ -69,6 +72,7 @@ namespace FortressLogger
             }
             return;
         }
+
         /// <summary>
         /// Write a message to the Error logger file
         /// </summary>
@@ -77,6 +81,7 @@ namespace FortressLogger
         public void LogError(string message, string functionName = "")
         {
             // Build the message
+            string header = "***** AN UNEXPECTED ERROR HAS OCCURED *****";
             StringBuilder loggerLine = new StringBuilder();
             loggerLine.Append(DateTimeOffset.Now.ToString("MM/dd/yyyy HH:mm:ss"));
             loggerLine.Append(_whiteSpace);
@@ -85,6 +90,7 @@ namespace FortressLogger
             loggerLine.Append("ERROR");
             loggerLine.Append(_whiteSpace);
             loggerLine.Append(message);
+            string footer = "******************************************";
 
             // Write the message to the Debug file and the Full Log file
             using (StreamWriter writer = new StreamWriter(_errorFile, true))
@@ -94,7 +100,9 @@ namespace FortressLogger
 
             using (StreamWriter writer = new StreamWriter(_fullLogFile, true))
             {
+                writer.WriteLine(header);
                 writer.WriteLine(loggerLine.ToString());
+                writer.WriteLine(footer);
             }
             return;
         }
@@ -106,6 +114,7 @@ namespace FortressLogger
         public void LogAlert(string message, string functionName = "")
         {
             // Build the message
+            string header = "***** ALERT! *****";
             StringBuilder loggerLine = new StringBuilder();
             loggerLine.Append(DateTimeOffset.Now.ToString("MM/dd/yyyy HH:mm:ss"));
             loggerLine.Append(_whiteSpace);
@@ -114,6 +123,7 @@ namespace FortressLogger
             loggerLine.Append("ALERT");
             loggerLine.Append(_whiteSpace);
             loggerLine.Append(message);
+            string footer = "****************************";
 
             // Write the message to the Debug file and the Full Log file
             using (StreamWriter writer = new StreamWriter(_alertFile, true))
@@ -123,7 +133,9 @@ namespace FortressLogger
 
             using (StreamWriter writer = new StreamWriter(_fullLogFile, true))
             {
+                writer.WriteLine(header);
                 writer.WriteLine(loggerLine.ToString());
+                writer.WriteLine(footer);
             }
             return;
         }
@@ -157,5 +169,34 @@ namespace FortressLogger
             return;
         }
 
+        /// <summary>
+        /// Log a message to log to the Database Log file. This level is meant to be used to write database related messages
+        /// </summary>
+        /// <param name="message">REQUIRED: The message that is being logged</param>
+        /// <param name="functionName">OPTIONAL: The name of the function that the message is being logged from</param>
+        public void LogDatabase(string message, string functionName = "")
+        {
+            // Build the message
+            StringBuilder loggerLine = new StringBuilder();
+            loggerLine.Append(DateTimeOffset.Now.ToString("MM/dd/yyyy HH:mm:ss"));
+            loggerLine.Append(_whiteSpace);
+            loggerLine.Append(string.IsNullOrEmpty(functionName) ? "Application" : functionName);
+            loggerLine.Append(_whiteSpace);
+            loggerLine.Append("DATABASE");
+            loggerLine.Append(_whiteSpace);
+            loggerLine.Append(message);
+
+            // Write the message to the Debug file and the Full Log file
+            using (StreamWriter writer = new StreamWriter(_databaseFile, true))
+            {
+                writer.WriteLine(loggerLine.ToString());
+            }
+
+            using (StreamWriter writer = new StreamWriter(_fullLogFile, true))
+            {
+                writer.WriteLine(loggerLine.ToString());
+            }
+            return;
+        }
     }
 }

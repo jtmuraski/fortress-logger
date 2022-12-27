@@ -22,8 +22,20 @@ namespace FortressLogger
         private string _schema { get; set; }
 
         // --Logger File Variables--
-        FortressLog _logger { get; set; }
-        private static bool logToFile { get; set; } = false;
+        private string _logDir { get; set; }
+        private string _folderField;
+        private string _folderName
+        {
+            get { return _folderName; }
+            set 
+            { 
+                _folderField = value;
+                _logger = new FortressLog(_logDir, _folderField);
+            }
+        }
+
+        private FortressLog _logger { get; set; }
+        private bool _logToFile { get; set; } = false;
 
         // ---Constructors---
         /// <summary>
@@ -45,19 +57,26 @@ namespace FortressLogger
                     throw new ArgumentNullException("If logToFile is set to TRUE, a valid filepath must be provided and may not be left null");
 
 
-            // Set Up Sql Connection
+            // Set properties
             _connString = connectionString;
             _schema = schema;
-            SqlConnection _conn = new SqlConnection(connectionString);
-            if (_conn == null)
-                throw new ArgumentNullException("The Sql Connection preperty did not initialize properlhy.");
-            _conn.Open();
+            _logToFile = logToFile;
+            _logDir = logDir;
+            _folderName = folderName; ;
+
             // Connect to the database and verify that the logging table is present in the database
             if (!VerifyLoggingTableIsPresent())
                 CreateLoggingTable(schema);
+            SqlLogger(AlertLevel.Info, "An instance of FortressSqlLogger gas been created", "FortressSqlLogger Constructor");
 
             // If logToFile is true, set up the FortressLog instance
-            _logger = new FortressLog(logDir, folderName);
+            if(_logToFile)
+            {
+                //_logger = new FortressLog(logDir, folderName);
+                _logger.LogInfo("An instance of FortressSqlLogger has been created.");
+                _logger.LogInfo("FortressSqlLogger has been configured to write to text files as well as the SQL Table");
+                SqlLogger(AlertLevel.Info, "FortressSqlLogger has been configured to write to text files as well as the SQL table.");
+            }           
         }
 
         public void SqlLogger(AlertLevel alertLevel, string message = "", string functionName = "")
@@ -81,6 +100,33 @@ namespace FortressLogger
             catch(Exception ex)
             {
                 throw new Exception(ex.ToString());
+            }
+
+            if(_logToFile)
+            {
+                switch(alertLevel)
+                {
+                    case (AlertLevel.Error):
+                        this._logger.LogError(message, functionName );
+                        break;
+                    case (AlertLevel.Alert):
+                        this._logger.LogAlert(message, functionName);
+                        break;
+                    case (AlertLevel.Debug):
+                        this._logger.LogDebugger(message, functionName);
+                        break;
+                    case (AlertLevel.Info):
+                        this._logger.LogInfo(message, functionName);
+                        break;
+                    case (AlertLevel.Database):
+                        this._logger.LogDatabase(message, functionName);
+                        break;
+                    default:
+                        this._logger.LogInfo(message, functionName);
+                        break;
+                }
+
+
             }
             return;
         }
