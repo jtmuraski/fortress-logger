@@ -19,8 +19,7 @@ namespace FortressLogger
         //
         // --Sql Variables--
         private string _connString { get; set; }
-        private string _schema { get; set}
-        private SqlConnection _conn { get; set; }
+        private string _schema { get; set; }
 
         // --Logger File Variables--
         FortressLog _logger { get; set; }
@@ -50,7 +49,9 @@ namespace FortressLogger
             _connString = connectionString;
             _schema = schema;
             SqlConnection _conn = new SqlConnection(connectionString);
-
+            if (_conn == null)
+                throw new ArgumentNullException("The Sql Connection preperty did not initialize properlhy.");
+            _conn.Open();
             // Connect to the database and verify that the logging table is present in the database
             if (!VerifyLoggingTableIsPresent())
                 CreateLoggingTable(schema);
@@ -63,7 +64,8 @@ namespace FortressLogger
         {
             string query = string.Format(@"INSERT INTO {0}FortressLoggerMessages (TimeStamp_Utc, AlertLevel, FunctionName, Message)
                                             VALUES( @time, @alertLevel, @functionName, @message);", _schema);
-            SqlCommand cmd = new SqlCommand(query, _conn);
+            SqlConnection conn = new SqlConnection(_connString);
+            SqlCommand cmd = new SqlCommand(query, conn);
 
             try
             {
@@ -73,7 +75,7 @@ namespace FortressLogger
                 cmd.Parameters.Add("@functionName", SqlDbType.NVarChar).Value = functionName;
                 cmd.Parameters.Add("message", SqlDbType.NVarChar).Value = message;
 
-                _conn.Open();
+                conn.Open();
                 cmd.ExecuteNonQuery();
             }
             catch(Exception ex)
@@ -90,14 +92,15 @@ namespace FortressLogger
                                 SELECT 'TRUE' AS 'TableExists'
                              ELSE
                                 SELECT 'FALSE' AS 'TableExists'; ";
-            SqlCommand cmd = new SqlCommand(query, _conn);
+            SqlConnection conn = new SqlConnection(_connString);
+            SqlCommand cmd = new SqlCommand(query, conn);
 
             try
             {
-                using (_conn)
+                using (conn)
                 using (cmd)
                 {
-                    _conn.Open();
+                    conn.Open();
                     using (SqlDataReader reader = cmd.ExecuteReader(CommandBehavior.CloseConnection))
                     {
                         while (reader.Read())
@@ -124,13 +127,14 @@ namespace FortressLogger
                                             Message nvarchar(1500)
                                             );", schema);
 
-            SqlCommand cmd = new SqlCommand(query, _conn);
+            SqlConnection conn = new SqlConnection(_connString);
+            SqlCommand cmd = new SqlCommand(query, conn);
             try
             {
-                using (_conn)
+                using (conn)
                 using (cmd)
                 {
-                    _conn.Open();
+                    conn.Open();
                     cmd.ExecuteNonQuery();
                 }
                 return;
