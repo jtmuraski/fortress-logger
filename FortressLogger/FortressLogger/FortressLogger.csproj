@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <Title>Fortress Logger</Title>
     <Authors>John Muraski</Authors>
-    <Version>0.1.0 </Version>
+    <Version>0.2.0 </Version>
     <Copyright>2022</Copyright>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>OSL-3.0</PackageLicenseExpression>
